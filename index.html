@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Weather - Революция в прогнозе погоды</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lexend:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #367CFF;
+            --secondary-color: #A076F9;
+            --accent-color: #00D4A3;
+            --background-body: #f0f4ff;
+            --text-dark: #1e2433;
+            --text-medium: #5a647e;
+            --text-light: #f0f4ff;
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-light: 0 4px 15px rgba(0, 91, 255, 0.08);
+            --shadow-medium: 0 8px 30px rgba(0, 91, 255, 0.12);
+            --border-radius: 16px;
+            --transition-speed: 0.4s;
+            --aurora-1: #367CFF;
+            --aurora-2: #A076F9;
+            --aurora-3: #00D4A3;
+            --aurora-4: #ff7eb3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background-color: var(--background-body);
+            background: linear-gradient(170deg, #f0f4ff 0%, #dde8ff 100%);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+             -webkit-font-smoothing: antialiased;
+             -moz-osx-font-smoothing: grayscale;
+        }
+
+        html {
+             scroll-behavior: smooth;
+        }
+
+        .background-aurora {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            filter: blur(100px) opacity(0.6);
+             -webkit-filter: blur(100px) opacity(0.6);
+        }
+
+        .aurora-blob {
+            position: absolute;
+            border-radius: 50%;
+            mix-blend-mode: screen;
+             opacity: 0.8;
+             animation: moveBlob 20s infinite alternate ease-in-out;
+        }
+
+        .blob-1 { background: var(--aurora-1); width: 500px; height: 500px; top: -15%; left: -10%; animation-duration: 25s; }
+        .blob-2 { background: var(--aurora-2); width: 600px; height: 600px; top: 10%; right: -20%; animation-duration: 22s; animation-delay: -5s; }
+        .blob-3 { background: var(--aurora-3); width: 450px; height: 450px; bottom: -20%; left: 30%; animation-duration: 28s; animation-delay: -10s; }
+         .blob-4 { background: var(--aurora-4); width: 400px; height: 400px; bottom: 5%; right: 10%; animation-duration: 20s; animation-delay: -7s; }
+
+         @keyframes moveBlob {
+             from { transform: translate(0, 0) scale(1) rotate(0deg); }
+             to { transform: translate(calc(var(--x, 0) * 50px), calc(var(--y, 0) * 50px)) scale(1.1) rotate(30deg); }
+         }
+         .blob-1 { --x: 1; --y: -1; }
+         .blob-2 { --x: -1; --y: 1; }
+         .blob-3 { --x: -0.5; --y: -1.5; }
+         .blob-4 { --x: 1.2; --y: 0.8; }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            padding: 1.2rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+
+         .navbar:hover {
+             background: rgba(255, 255, 255, 0.65);
+         }
+
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .logo {
+            font-family: 'Lexend', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: transform var(--transition-speed) ease;
+        }
+         .navbar .logo:hover {
+             transform: scale(1.03);
+         }
+
+         .navbar .logo i {
+            margin-right: 12px;
+            font-size: 1.6rem;
+            color: var(--primary-color);
+         }
+
+        .navbar ul { list-style: none; display: flex; }
+        .navbar ul li { margin-left: 30px; }
+
+        .navbar ul li a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-speed) ease;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .navbar ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width var(--transition-speed) ease;
+            border-radius: 1px;
+        }
+
+        .navbar ul li a:hover { color: var(--text-dark); }
+        .navbar ul li a:hover::after { width: 100%; }
+
+        .hero {
+            padding: 140px 0 120px 0;
+            text-align: center;
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero .container {
+             max-width: 900px;
+        }
+
+        .hero h1 {
+            font-family: 'Lexend', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.15;
+            color: var(--text-dark);
+             background: linear-gradient(90deg, #1e2433, #3b4868);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+             background-clip: text;
+             text-fill-color: transparent;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .hero p.subtitle {
+            font-size: 1.4rem;
+            color: var(--text-medium);
+            opacity: 0.95;
+            margin-bottom: 2.5rem;
+            max-width: 780px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+         .hero .platforms {
+             margin-bottom: 2rem;
+             font-size: 1.1rem;
+             color: var(--text-medium);
+        }
+        .hero .platforms i {
+            margin: 0 12px;
+            font-size: 1.8rem;
+            transition: transform 0.3s ease, color 0.3s ease;
+             color: var(--text-medium);
+        }
+         .hero .platforms i.fa-windows:hover { color: #00a4ef; transform: scale(1.2); }
+         .hero .platforms i.fa-linux:hover { color: #dd4814; transform: scale(1.2); }
+         .hero .platforms i.fa-ubuntu:hover { color: #E95420; transform: scale(1.2); }
+
+
+         .hero .license-info {
+            font-size: 1rem;
+            color: var(--text-medium);
+            opacity: 0.8;
+            margin-top: 3rem;
+            margin-bottom: 2.5rem;
+         }
+          .hero .license-info i {
+              margin-right: 8px;
+              color: var(--primary-color);
+          }
+          .hero .license-info a {
+              color: var(--primary-color);
+              text-decoration: none;
+              font-weight: 600;
+              border-bottom: 1px dotted var(--primary-color);
+               transition: color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+          }
+          .hero .license-info a:hover {
+               color: var(--secondary-color);
+               border-bottom-color: var(--secondary-color);
+          }
+
+
+        .btn {
+            display: inline-block;
+            padding: 16px 40px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: none;
+            font-size: 1.05rem;
+            margin: 10px;
+            position: relative;
+            overflow: hidden;
+             box-shadow: 0 6px 12px rgba(0, 91, 255, 0.15);
+             z-index: 1;
+        }
+         .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(45deg, var(--accent-color), var(--secondary-color));
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease;
+            z-index: -1;
+             border-radius: var(--border-radius);
+         }
+
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+        }
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 91, 255, 0.25);
+             color: #fff;
+        }
+        .btn-primary:hover::before { opacity: 0; }
+
+
+        .btn-secondary {
+             background: var(--background-body);
+            color: var(--primary-color);
+            border: 1px solid #d5e0ff;
+             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        .btn-secondary:hover {
+            transform: translateY(-4px) scale(1.03);
+             border-color: var(--primary-color);
+             box-shadow: 0 8px 16px rgba(0, 91, 255, 0.1);
+             color: var(--text-light);
+        }
+         .btn-secondary:hover::before { opacity: 1; }
+
+
+         .btn i {
+             margin-right: 12px;
+             font-size: 1.1em;
+             vertical-align: middle;
+         }
+
+
+        .section {
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+         .section-title {
+            text-align: center;
+            font-family: 'Lexend', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+             letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            margin-bottom: 5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+             line-height: 1.8;
+        }
+
+        .features {  }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            padding: 40px 35px;
+            text-align: center;
+            border-radius: var(--border-radius);
+             border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-light);
+            transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow var(--transition-speed) ease;
+             position: relative;
+             overflow: hidden;
+        }
+        .feature-item:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .feature-item i {
+            font-size: 3.2rem;
+             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+             -webkit-background-clip: text;
+             -webkit-text-fill-color: transparent;
+             background-clip: text;
+             text-fill-color: transparent;
+            margin-bottom: 1.8rem;
+             display: inline-block;
+            transition: transform var(--transition-speed) ease;
+        }
+         .feature-item:hover i {
+             transform: scale(1.15) rotate(-5deg);
+         }
+
+        .feature-item h3 {
+            font-family: 'Lexend', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .feature-item p {
+            font-size: 1rem;
+            color: var(--text-medium);
+             line-height: 1.8;
+        }
+
+        .screenshots {  }
+
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 3rem;
+        }
+
+        .screenshot-item {
+             position: relative;
+             overflow: hidden;
+             border-radius: calc(var(--border-radius) - 4px);
+             box-shadow: var(--shadow-medium);
+             transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+        .screenshot-item:hover {
+             transform: translateY(-8px) scale(1.03);
+              box-shadow: 0 12px 35px rgba(0, 91, 255, 0.2);
+        }
+
+         .screenshot-item a {
+             display: block;
+             line-height: 0;
+         }
+
+        .screenshot-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: calc(var(--border-radius) - 4px);
+        }
+
+         .os-label {
+             text-align: center;
+             font-family: 'Lexend', sans-serif;
+             font-weight: 600;
+             margin-top: 1rem;
+             margin-bottom: 2rem;
+             color: var(--text-dark);
+             font-size: 1.5rem;
+             letter-spacing: 0.5px;
+         }
+         .os-label i {
+             margin-right: 10px;
+             color: var(--primary-color);
+             vertical-align: middle;
+         }
+
+
+        .install {  }
+        .install-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 35px;
+             margin-top: 2rem;
+        }
+        .install-card {
+             background: var(--glass-bg);
+             backdrop-filter: blur(10px) saturate(140%);
+             -webkit-backdrop-filter: blur(10px) saturate(140%);
+             padding: 40px 30px;
+             border-radius: var(--border-radius);
+             border: 1px solid var(--glass-border);
+             box-shadow: var(--shadow-light);
+             text-align: center;
+             flex-basis: 31%;
+             min-width: 300px;
+             display: flex;
+             flex-direction: column;
+             transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow var(--transition-speed) ease;
+        }
+        .install-card:hover {
+            transform: translateY(-10px);
+             box-shadow: var(--shadow-medium);
+        }
+        .install-card i.fab, .install-card i.fas {
+             font-size: 3.8rem;
+             margin-bottom: 1.8rem;
+              transition: transform var(--transition-speed) ease;
+        }
+         .install-card:hover i.fab, .install-card:hover i.fas {
+             transform: scale(1.1);
+         }
+         .install-card.windows i.fa-windows { color: #00a4ef; }
+         .install-card.linux i.fa-linux { color: #dd4814; }
+
+         .install-card h3 {
+             font-family: 'Lexend', sans-serif;
+             font-size: 1.7rem;
+             font-weight: 600;
+             margin-bottom: 1.2rem;
+              color: var(--text-dark);
+         }
+         .install-card p {
+             margin-bottom: 2.5rem;
+             color: var(--text-medium);
+             flex-grow: 1;
+             font-size: 1rem;
+             line-height: 1.8;
+         }
+
+         .install-card .btn {
+             margin-top: auto;
+             padding: 14px 30px;
+             font-size: 1rem;
+             width: 90%;
+             margin-left: auto; margin-right: auto;
+         }
+
+         @media (max-width: 1200px) {
+            .hero h1 { font-size: 3.8rem; }
+            .hero p.subtitle { font-size: 1.3rem; }
+            .install-card { flex-basis: 45%; }
+        }
+
+        @media (max-width: 992px) {
+            .hero h1 { font-size: 3.2rem; }
+            .hero p.subtitle { font-size: 1.2rem; }
+            .section-title { font-size: 2.6rem; }
+            .features-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px;}
+            .screenshot-gallery { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+             .background-aurora { filter: blur(80px) opacity(0.5); -webkit-filter: blur(80px) opacity(0.5); }
+             .navbar ul li { margin-left: 20px; }
+
+        }
+
+        @media (max-width: 768px) {
+            body { font-size: 15px; }
+             .navbar .container { flex-direction: column; }
+             .navbar .logo { margin-bottom: 1rem; }
+             .navbar ul { margin-top: 0.5rem; padding-left: 0; flex-wrap: wrap; justify-content: center;}
+             .navbar ul li { margin: 5px 12px; }
+
+             .hero { padding: 100px 0 80px 0; min-height: 70vh; }
+             .hero h1 { font-size: 2.8rem; }
+             .hero p.subtitle { font-size: 1.1rem; }
+
+             .section { padding: 80px 0; }
+             .section-title { font-size: 2.3rem; }
+             .section-subtitle { margin-bottom: 3.5rem; font-size: 1.1rem;}
+
+             .features-grid { grid-template-columns: 1fr; gap: 25px;}
+             .install-options { flex-direction: column; align-items: center; gap: 25px;}
+             .install-card { flex-basis: 90%; max-width: 450px; }
+
+             .screenshot-gallery { grid-template-columns: 1fr; gap: 20px;}
+              .os-label { font-size: 1.3rem; }
+
+             .background-aurora { display: none; }
+              body { background: linear-gradient(170deg, #f0f4ff 0%, #dde8ff 100%); }
+        }
+
+         @media (max-width: 576px) {
+             .hero h1 { font-size: 2.4rem; }
+             .hero p.subtitle { font-size: 1rem; }
+             .btn { width: 90%; padding: 14px 25px; font-size: 1rem; }
+             .hero .platforms i { font-size: 1.6rem; }
+             .hero .license-info { font-size: 0.9rem; margin-top: 2rem; }
+             .section-title { font-size: 2rem; }
+             .feature-item { padding: 30px 25px;}
+             .install-card { padding: 30px 25px;}
+             .install-card h3 { font-size: 1.5rem; }
+             .install-card p { font-size: 0.95rem; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-aurora">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+        <div class="aurora-blob blob-4"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="#home" class="logo"><i class="fas fa-cloud-sun-rain"></i> AI Weather</a>
+            <ul>
+                <li><a href="#features">Возможности</a></li>
+                <li><a href="#screenshots">Галерея</a></li>
+                <li><a href="#install">Установка</a></li>
+                <li><a href="https://github.com/Kot2011fjdjfj/AI_Weather" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>Погода Будущего.<br>Сегодня.</h1>
+            <p class="subtitle">Интеллектуальный погодный ассистент AI Weather с анализом от GigaChat AI. Точно, красиво, наглядно.</p>
+             <div class="platforms">
+                 <i class="fab fa-windows" title="Windows"></i>
+                 <i class="fab fa-linux" title="Linux"></i>
+
+            </div>
+            <p class="license-info">
+                <i class="fab fa-creative-commons"></i> Распространяется под свободной лицензией
+                <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer" title="GNU General Public License v3.0">GNU GPL v3.0</a>.
+            </p>
+             <div class="hero-buttons">
+                <a href="#install" class="btn btn-primary"><i class="fas fa-rocket"></i> Начать работу</a>
+                <a href="https://github.com/Kot2011fjdjfj/AI_Weather" target="_blank" rel="noopener noreferrer" class="btn btn-secondary"><i class="fab fa-github"></i> Исходный код</a>
+             </div>
+        </div>
+    </section>
+
+    <section class="features section" id="features">
+        <div class="container">
+            <h2 class="section-title">Интеллект в каждой детали</h2>
+            <p class="section-subtitle">Откройте для себя ключевые преимущества AI Weather, которые изменят ваше представление о прогнозе погоды.</p>
+            <div class="features-grid">
+                 <div class="feature-item">
+                    <i class="fas fa-location-dot"></i>
+                    <h3>Точность здесь и сейчас</h3>
+                    <p>Актуальные погодные условия для вашего города: от температуры до УФ-индекса.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Прогноз на 7 дней</h3>
+                    <p>Наглядные графики и подробная информация о погоде на неделю вперед.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h3>Почасовая детализация</h3>
+                    <p>Планируйте свой день с точностью до часа благодаря детальному прогнозу.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-brain"></i>
+                    <h3>AI-Аналитика GigaChat</h3>
+                    <p>Понимайте погоду глубже с помощью ИИ-сводок и анализа тенденций.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-swatchbook"></i>
+                    <h3>Персонализация интерфейса</h3>
+                    <p>Настройте внешний вид и параметры прогноза под свои предпочтения.</p>
+                </div>
+                 <div class="feature-item">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Кроссплатформенность</h3>
+                    <p>Используйте AI Weather на Windows и популярных дистрибутивах Linux без проблем.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="screenshots section" id="screenshots">
+        <div class="container">
+            <h2 class="section-title">Визуальное совершенство</h2>
+            <p class="section-subtitle">Оцените чистый и интуитивно понятный интерфейс AI Weather на разных платформах.</p>
+
+            <h3 class="os-label"><i class="fab fa-windows"></i> Windows</h3>
+            <div class="screenshot-gallery">
+
+                <div class="screenshot-item"><a href="https://i.postimg.cc/4HP0BrR7/1.png" target="_blank"><img src="https://i.postimg.cc/4HP0BrR7/1.png" alt="AI Weather Screenshot Windows 1"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/fksTqmhD/2.png" target="_blank"><img src="https://i.postimg.cc/fksTqmhD/2.png" alt="AI Weather Screenshot Windows 2"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/bdRY7rzb/3.png" target="_blank"><img src="https://i.postimg.cc/bdRY7rzb/3.png" alt="AI Weather Screenshot Windows 3"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/zH8Mwq6Y/4.png" target="_blank"><img src="https://i.postimg.cc/zH8Mwq6Y/4.png" alt="AI Weather Screenshot Windows 4"></a></div>
+            </div>
+
+            <h3 class="os-label" style="margin-top: 4rem;"><i class="fab fa-linux"></i> Linux (Ubuntu)</h3>
+             <div class="screenshot-gallery">
+                 <div class="screenshot-item"><a href="https://i.postimg.cc/Rq1xWDyz/Screenshot-from-2025-02-01-23-08-45.png" target="_blank"><img src="https://i.postimg.cc/Rq1xWDyz/Screenshot-from-2025-02-01-23-08-45.png" alt="AI Weather Screenshot Ubuntu 1"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/nCHbB1f9/Screenshot-from-2025-02-01-23-08-56.png" target="_blank"><img src="https://i.postimg.cc/nCHbB1f9/Screenshot-from-2025-02-01-23-08-56.png" alt="AI Weather Screenshot Ubuntu 2"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/PP2G48d3/Screenshot-from-2025-02-01-23-09-07.png" target="_blank"><img src="https://i.postimg.cc/PP2G48d3/Screenshot-from-2025-02-01-23-09-07.png" alt="AI Weather Screenshot Ubuntu 3"></a></div>
+                <div class="screenshot-item"><a href="https://i.postimg.cc/MfmCgnVG/Screenshot-from-2025-02-01-23-09-16.png" target="_blank"><img src="https://i.postimg.cc/MfmCgnVG/Screenshot-from-2025-02-01-23-09-16.png" alt="AI Weather Screenshot Ubuntu 4"></a></div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="install section" id="install">
+        <div class="container">
+             <h2 class="section-title">Выберите ваш путь</h2>
+            <p class="section-subtitle">Установка AI Weather проста и удобна. Выберите подходящий вариант для вашей системы.</p>
+            <div class="install-options">
+                 <div class="install-card windows">
+                    <i class="fab fa-windows"></i>
+                    <h3>Windows <span style="font-weight: 400; font-size: 0.8em;">(ZIP)</span></h3>
+                     <p>Быстрый старт: скачайте архив, распакуйте и запустите. Просто и эффективно.</p>
+                     <a href="https://cloud.mail.ru/public/oG8S/DzEAFQ9ZX" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i class="fas fa-file-zipper"></i> Скачать ZIP</a>
+                </div>
+                 <div class="install-card windows">
+                     <i class="fab fa-windows"></i>
+                      <h3>Windows <span style="font-weight: 400; font-size: 0.8em;">(EXE)</span></h3>
+                     <p>Все-в-одном: единый файл для максимального удобства установки.</p>
+                     <a href="https://cloud.mail.ru/public/1Tra/5vuN8m7ju" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i class="fas fa-compact-disc"></i> Скачать EXE</a>
+                 </div>
+                 <div class="install-card linux">
+                    <i class="fab fa-linux"></i>
+                     <h3>Linux <span style="font-weight: 400; font-size: 0.8em;">(.py)</span></h3>
+                     <p>Гибкость Python: скачайте скрипт, установите зависимости и запустите.</p>
+                     <a href="https://cloud.mail.ru/public/oS6J/JAMpABcFg" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i class="fab fa-python"></i> Скачать .py</a>
+                     <a href="https://github.com/Kot2011fjdjfj/AI_Weather#%D1%83%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0-%D0%B7%D0%B0%D0%B2%D0%B8%D1%81%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B5%D0%B9-%D0%B8-%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="margin-top: 10px;"><i class="fas fa-book-open"></i> Инструкция</a>
+                 </div>
+            </div>
+        </div>
+    </section>
+
+
+     <footer style="text-align: center; padding: 40px 20px; font-size: 0.9em; color: var(--text-medium); opacity: 0.7; margin-top: 50px; border-top: 1px solid #dde8ff;">
+         AI Weather Project | Лицензия <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer" style="color: var(--text-medium); text-decoration: underline;">GNU GPL v3.0</a>
+     </footer>
+
+
+</body>
+</html>
